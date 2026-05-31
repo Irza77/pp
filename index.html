@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quest Cinta</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0c0a09;--card:#111010;--border:#2a2420;--accent:#c8854a;--accent2:#8b5e3c;--text:#d4c4b0;--muted:#6b5a4e;--danger:#9b3a3a;--ink:#1a1512}
+body{background:var(--bg);color:var(--text);font-family:'Cormorant Garamond',Georgia,serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;position:relative;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(139,94,60,.08) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 80% 90%,rgba(155,58,58,.06) 0%,transparent 70%);pointer-events:none}
+.container{width:100%;max-width:580px;position:relative;z-index:1}
+.header{text-align:center;margin-bottom:36px;opacity:0;animation:fadeUp .8s ease forwards}
+.header .label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.header h1{font-size:clamp(24px,6vw,38px);font-weight:300;font-style:italic;color:var(--text);line-height:1.15}
+.header h1 span{color:var(--accent)}
+.part-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);border:1px solid var(--accent2);border-radius:2px;padding:3px 10px;margin-bottom:10px}
+.divider{display:flex;align-items:center;gap:12px;margin:14px 0;opacity:.4}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted)}
+.prog-line{display:flex;gap:4px;margin-bottom:20px}
+.prog-dot{height:2px;flex:1;background:var(--border);border-radius:1px;transition:background .4s}
+.prog-dot.done{background:var(--accent2)}
+.prog-dot.cur{background:var(--accent)}
+.stats{display:flex;gap:10px;margin-bottom:18px}
+.stat-item{flex:1;background:var(--ink);border:1px solid var(--border);border-radius:2px;padding:10px 12px}
+.stat-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stat-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.stat-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.stat-fill.hati{background:var(--danger)}
+.stat-fill.jujur{background:var(--accent)}
+.stat-fill.lupa{background:#4a6b8b}
+.stat-val{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);margin-top:4px}
+.scene-card{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:30px 26px;margin-bottom:16px;position:relative}
+.scene-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:.5}
+.chapter-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);margin-bottom:18px;display:block}
+.scene-text{font-size:clamp(15px,3.5vw,18px);line-height:1.85;font-weight:300;color:var(--text)}
+.scene-text .hi{color:var(--accent);font-style:italic}
+.scene-text .dlg{display:block;border-left:2px solid var(--border);padding-left:14px;margin:14px 0;font-style:italic;color:#b0a090}
+.choices{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.choice-btn{background:transparent;border:1px solid var(--border);border-radius:2px;padding:16px 20px;color:var(--text);font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(14px,3vw,16px);font-weight:300;text-align:left;cursor:pointer;transition:all .25s;line-height:1.5}
+.choice-btn .key{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);display:block;margin-bottom:5px}
+.choice-btn .note{font-size:11px;font-style:italic;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace;display:block}
+.choice-btn:hover{border-color:var(--accent2);background:rgba(139,94,60,.06);color:var(--accent);transform:translateX(4px)}
+.choice-btn.sel{border-color:var(--accent);background:rgba(200,133,74,.08);color:var(--accent);pointer-events:none}
+.choice-btn.dim{opacity:.3;pointer-events:none}
+.cons-box{background:var(--ink);border:1px solid var(--border);border-left:2px solid var(--accent2);border-radius:2px;padding:16px 18px;margin-bottom:14px;font-size:clamp(13px,3vw,15px);line-height:1.7;color:#a09080;font-style:italic;display:none}
+.cons-box.show{display:block;animation:fadeUp .5s ease forwards}
+.next-btn{background:transparent;border:1px solid var(--accent2);border-radius:2px;padding:11px 26px;color:var(--accent);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;display:none}
+.next-btn.show{display:block}
+.next-btn:hover{background:rgba(200,133,74,.08)}
+.ending{text-align:center;padding:36px 16px;display:none}
+.ending.show{display:block;animation:fadeUp .8s ease forwards}
+.end-type{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.end-title{font-size:clamp(20px,5vw,30px);font-weight:300;font-style:italic;margin-bottom:18px;line-height:1.2}
+.end-title.numb{color:#4a6b8b}
+.end-title.honest{color:var(--accent)}
+.end-title.bitter{color:var(--accent2)}
+.end-title.bad{color:var(--danger)}
+.end-title.healed{color:#7aab80}
+.end-title.stuck{color:var(--danger)}
+.end-title.raw{color:var(--accent2)}
+.end-title.free{color:var(--accent)}
+.end-text{font-size:clamp(14px,3vw,16px);line-height:1.9;color:#9a8878;font-weight:300;max-width:440px;margin:0 auto 20px;white-space:pre-line;text-align:left}
+.end-quote{font-size:clamp(14px,3.5vw,17px);font-style:italic;color:var(--accent2);margin:18px 0;padding:14px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.btn-row{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:16px}
+.restart-btn{background:transparent;border:1px solid var(--border);border-radius:2px;padding:11px 28px;color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.restart-btn:hover{border-color:var(--accent2);color:var(--text)}
+.part2-btn{background:transparent;border:1px solid var(--accent);border-radius:2px;padding:12px 32px;color:var(--accent);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.part2-btn:hover{background:rgba(200,133,74,.1)}
+.part-transition{text-align:center;padding:48px 16px;display:none}
+.part-transition.show{display:block;animation:fadeUp .8s ease forwards}
+.pt-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+.pt-title{font-size:clamp(22px,5vw,34px);font-weight:300;font-style:italic;color:var(--text);margin-bottom:16px;line-height:1.2}
+.pt-sub{font-size:clamp(13px,3vw,15px);color:#7a6a5e;line-height:1.8;max-width:400px;margin:0 auto 32px}
+.pt-btn{background:transparent;border:1px solid var(--accent2);border-radius:2px;padding:12px 32px;color:var(--accent);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.pt-btn:hover{background:rgba(200,133,74,.08)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:480px){.stats{flex-wrap:wrap}.stat-item{min-width:calc(50% - 5px)}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header" id="mainHeader">
+    <div class="part-badge" id="partBadge">Part 1</div>
+    <div class="label">Interactive Fiction &middot; Bahasa Indonesia</div>
+    <h1 id="mainTitle">Hal-Hal yang <span>Tidak Pernah</span> Kamu Bilang</h1>
+    <div class="divider"><span>&#9670;</span></div>
+  </div>
+  <div class="prog-line" id="progLine"></div>
+  <div class="stats" id="statsBar">
+    <div class="stat-item">
+      <div class="stat-label">Hati</div>
+      <div class="stat-bar"><div class="stat-fill hati" id="fHati" style="width:80%"></div></div>
+      <div class="stat-val" id="vHati">80</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Kejujuran</div>
+      <div class="stat-bar"><div class="stat-fill jujur" id="fJujur" style="width:40%"></div></div>
+      <div class="stat-val" id="vJujur">40</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Keberanian Lupa</div>
+      <div class="stat-bar"><div class="stat-fill lupa" id="fLupa" style="width:10%"></div></div>
+      <div class="stat-val" id="vLupa">10</div>
+    </div>
+  </div>
+  <div class="scene-card" id="sceneCard">
+    <span class="chapter-tag" id="chapTag"></span>
+    <div class="scene-text" id="sceneText"></div>
+  </div>
+  <div class="cons-box" id="consBox"></div>
+  <div class="choices" id="choices"></div>
+  <button class="next-btn" id="nextBtn">Lanjutkan &#8594;</button>
+
+  <!-- Part 1 Ending -->
+  <div class="ending" id="endScreen">
+    <div class="end-type" id="endType"></div>
+    <div class="end-title" id="endTitle"></div>
+    <div class="end-text" id="endText"></div>
+    <div class="end-quote" id="endQuote"></div>
+    <div class="btn-row">
+      <button class="part2-btn" id="goPart2Btn">Lanjut ke Part 2 &#8594;</button>
+      <button class="restart-btn" id="restartBtn">Mulai Lagi dari Awal</button>
+    </div>
+  </div>
+
+  <!-- Part 1 -> Part 2 Transition -->
+  <div class="part-transition" id="transScreen">
+    <div class="pt-label">Selanjutnya</div>
+    <div class="pt-title">Orang yang Paling Sering<br>Kamu Sakiti</div>
+    <div class="pt-sub">Bukan dia. Bukan siapapun yang pernah pergi.<br><br>Ini tentang kamu — dan semua cara kamu diam-diam menghukum diri sendiri atas hal-hal yang bukan salahmu.</div>
+    <button class="pt-btn" id="startPart2Btn">Siap &#8594;</button>
+  </div>
+
+  <!-- Part 2 Ending -->
+  <div class="ending" id="endScreen2">
+    <div class="end-type" id="endType2"></div>
+    <div class="end-title" id="endTitle2"></div>
+    <div class="end-text" id="endText2"></div>
+    <div class="end-quote" id="endQuote2"></div>
+    <div class="btn-row">
+      <button class="restart-btn" id="restartBtn2">Mulai Lagi dari Part 1</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var S = { scene: 0, part: 1, hati: 80, jujur: 40, lupa: 10 };
+
+var part1 = [
+  {
+    chapter: "Babak I — Pertemuan Terakhir",
+    html: "Kamu duduk di kafe yang sama. Meja yang sama. Kursi yang sama.\n\nTiga tahun lalu, di sini kamu bilang <span class='hi'>\"aku suka kamu.\"</span>\n\nHari ini, dia yang minta ketemu. WA-nya singkat — <span class='hi'>\"bisa ketemuan? penting.\"</span>\n\nKamu nunggu 20 menit. Sekarang dia masuk pintu. Rambutnya beda, tapi matanya sama — mata yang pernah bikin kamu nggak bisa tidur berbulan-bulan.\n\nDia duduk. Diam sebentar. Lalu bilang:\n<span class='dlg'>\"Aku mau minta maaf.\"</span>",
+    choices: [
+      { label: "Bilang: 'Nggak apa-apa.' (padahal itu bohong)", note: "Aman. Tapi kamu udah capek jadi aman.", dh: -10, dj: -15, dl: 5, cons: "Kamu senyum. Dia kelihatan lega. Dan kamu ngerasa ada sesuatu yang remuk pelan-pelan di dalam dada — karena kamu udah biasa ngorbanin kejujuran buat bikin orang lain nyaman.", next: 1 },
+      { label: "Diam. Kamu belum siap dengerin.", note: "Jujur tapi menyakitkan.", dh: -5, dj: 10, dl: 0, cons: "Keheningan itu berat. Dia nunggu. Kamu nunggu. Dan tiba-tiba keduanya sadar — kalian udah lama nggak tau cara ngomong satu sama lain.", next: 1 },
+      { label: "Bilang: 'Aku tunggu ini lama banget.'", note: "Ini yang paling jujur. Dan paling menakutkan.", dh: 5, dj: 20, dl: -5, cons: "Suaramu sedikit gemetar. Tapi kamu bilang juga. Dan untuk pertama kalinya dalam waktu lama, kamu ngerasa berdiri di tanah yang solid.", next: 1 }
+    ]
+  },
+  {
+    chapter: "Babak I — Apa yang Tertinggal",
+    html: "Dia ngomong panjang. Tentang waktu itu. Tentang keputusan yang dia buat.\n<span class='dlg'>\"Aku tau aku salah. Waktu itu aku takut. Aku pilih yang lebih mudah.\"</span>\nKata-kata itu mendarat di dada kamu kayak batu.\n\nBukan karena kamu nggak pernah nuduh hal itu.\n\nTapi karena kamu udah coba bertahun-tahun nggak percaya itu. Kamu udah bangun cerita di kepala — bahwa mungkin kamu yang terlalu lebay, terlalu baper, terlalu banyak minta.\n\nDan sekarang dia duduk di depan kamu, ngasih tau bahwa cerita yang kamu bangun itu... salah.\n\nKamu yang benar waktu itu. Dan kamu ngorbanin diri sendiri supaya nggak kelihatan <span class='hi'>\"terlalu banyak nuntut.\"</span>",
+    choices: [
+      { label: "Bilang: 'Kenapa baru sekarang?'", note: "Kamu berhak nanya ini.", dh: -5, dj: 15, dl: 5, cons: "Dia diam agak lama. 'Aku nggak siap.' Itu jawabannya. Cuma tiga kata. Dan entah kenapa, tiga kata itu lebih menyakitkan dari semua yang dia bilang sebelumnya.", next: 2 },
+      { label: "Nangis. Kamu nggak bisa tahan lagi.", note: "Ini bukan kelemahan. Ini sudah terlalu lama ditahan.", dh: 10, dj: 10, dl: -10, cons: "Air mata pertama jatuh dan rasanya kayak bendungan yang jebol. Dia nyodorin tisu. Dan kamu benci diri sendiri karena menerima tisu itu masih terasa intimate banget.", next: 2 },
+      { label: "Ketawa pelan. Pahit.", note: "Kadang sedih udah terlalu dalam sampai nggak bisa nangis.", dh: -15, dj: 5, dl: 15, cons: "Kamu ketawa kecil. Dia kelihatan bingung dan sedikit terluka. Dan kamu sadar — kamu udah jadi orang yang berbeda dari yang dia ingat. Entah itu bagus atau bukan.", next: 2 }
+    ]
+  },
+  {
+    chapter: "Babak II — Pertanyaan yang Menakutkan",
+    html: "Kemudian dia bilang sesuatu yang kamu nggak expect sama sekali.\n<span class='dlg'>\"Aku masih mikirin kamu. Setelah semua ini.\"</span>\nKamu diam.\n\nDetak jantung kamu naik satu nada.\n\nKamu tau ini momen yang harusnya bikin seneng. Tapi yang kamu rasain malah semacam... ngeri.\n\nKarena kamu juga masih mikirinnya. Dan itu masalahnya.\n\n<span class='hi'>Cinta yang nggak pernah selesai itu bukan romantis</span> — itu luka yang belum sembuh yang kamu kasih nama indah supaya nggak terasa kayak luka.",
+    choices: [
+      { label: "Bilang: 'Aku juga. Dan itu yang bikin aku takut ketemu kamu lagi.'", note: "Paling jujur. Paling berbahaya.", dh: 15, dj: 25, dl: -15, cons: "Kamu ngomong itu dan langit nggak runtuh. Tapi sesuatu dalam diri kamu bergerak — kayak tulang yang selama ini salah posisi, akhirnya balik ke tempat yang benar. Sakit. Tapi benar.", next: 3 },
+      { label: "Bilang: 'Aku udah move on.' (kamu belum)", note: "Proteksi diri. Wajar. Tapi mahal harganya.", dh: -20, dj: -20, dl: 20, cons: "Kamu bilang itu dengan meyakinkan. Cukup meyakinkan untuk dia percaya. Tapi kamu, duduk di sana, tau betapa bohongnya kata-kata itu terasa di mulut kamu.", next: 3 },
+      { label: "Nggak jawab. Kamu minum kopi dan lirik ke luar jendela.", note: "Diammu lebih keras dari kata-kata apapun.", dh: -5, dj: 5, dl: 5, cons: "Dia ngerti. Kamu tau dia ngerti. Dan kalian berdua duduk dalam keheningan yang punya terlalu banyak arti — terlalu banyak sampai nggak ada yang berani ngartiin dengan kata-kata.", next: 3 }
+    ]
+  },
+  {
+    chapter: "Babak III — Keputusan",
+    html: "Satu jam berlalu.\n\nKopi kalian udah lama habis. Pelayan udah lihat ke meja kalian tiga kali.\n\nDan sekarang tiba saat yang paling berat:\n\n<span class='hi'>Apa yang terjadi setelah ini?</span>\n\nDia nunggu jawaban kamu. Atau mungkin nggak. Mungkin dia juga nggak tau apa yang dia harapkan.\n\nKalian berdua duduk di persimpangan yang sama kayak tiga tahun lalu. Tapi kali ini lebih tua, lebih capek, dan tau lebih banyak tentang betapa sakitnya salah jalan.\n\nHujan mulai turun di luar.\n\nKamu harus ngambil keputusan.",
+    choices: [
+      { label: "Bilang: 'Aku butuh waktu. Jangan hubungi aku dulu.'", note: "Kamu milih dirimu sendiri. Akhirnya.", dh: 10, dj: 15, dl: 20, cons: null, ending: "lupa" },
+      { label: "Bilang: 'Coba lagi. Aku mau coba lagi.'", note: "Harapan itu manusiawi. Tapi ini mungkin yang paling menyakitkan dari semua pilihan.", dh: 20, dj: 5, dl: -20, cons: null, ending: "honest" },
+      { label: "Bilang: 'Aku harus pergi.' — dan kamu beneran pergi.", note: "Kadang closure bukan percakapan. Kadang closure adalah langkah kaki.", dh: -10, dj: 20, dl: 30, cons: null, ending: "bitter" },
+      { label: "Nggak bilang apa-apa. Kamu cuma senyum — dan kalian sama-sama tau artinya.", note: "Beberapa hal memang lebih baik dibiarkan mengambang.", dh: -5, dj: 0, dl: 10, cons: null, ending: "bad" }
+    ]
+  }
+];
+
+var endings1 = {
+  lupa: { type: "Ending Part 1: Bertumbuh", title: "Ruang untuk Bernafas", cls: "numb", text: "Kamu pulang sendirian. Hujan masih turun.\n\nTapi untuk pertama kalinya dalam lama banget, kamu nggak ngerasa harus buru-buru kemana-mana.\n\nKamu belum sembuh. Tapi kamu kasih diri kamu izin untuk belum sembuh.\n\nDan itu udah cukup untuk sekarang.", quote: "Menyembuhkan diri bukan berarti melupakan. Tapi belajar hidup berdampingan dengan apa yang sudah terjadi." },
+  honest: { type: "Ending Part 1: Berani", title: "Kamu Pilih untuk Percaya Lagi", cls: "honest", text: "Ini bukan happy ending yang dijamin.\n\nIni adalah pilihan untuk jatuh lagi dengan mata terbuka — tau risikonya, dan tetap milih.\n\nMungkin ini yang paling gila dari semua pilihan. Atau mungkin ini yang paling manusiawi.\n\nTapi kamu berjalan ke luar kafe itu berdua, di bawah hujan, tanpa payung.", quote: "Cinta bukan ketika kamu nggak takut. Cinta adalah ketika kamu takut, tapi tetap datang." },
+  bitter: { type: "Ending Part 1: Pahit-Jujur", title: "Langkah yang Paling Berat", cls: "bitter", text: "Kamu keluar sebelum dia sempat bilang apa-apa lagi.\n\nHujan kena mukamu. Kamu nggak pake payung.\n\nDan di balik pintu kafe itu, kamu tau dia masih duduk — mungkin nunggu, mungkin nggak.\n\nKamu nggak lihat ke belakang.\n\nBukan karena kamu nggak peduli. Tapi justru karena kamu terlalu peduli, dan kamu tau kalau kamu lihat balik, kamu nggak bakal bisa jalan.", quote: "Kadang pergi adalah bentuk cinta yang paling tidak dipahami — oleh orang lain, maupun oleh diri sendiri." },
+  bad: { type: "Ending Part 1: Mengambang", title: "Hal-Hal yang Tidak Punya Nama", cls: "bad", text: "Kalian berpisah tanpa kejelasan.\n\nTidak ada janji. Tidak ada penutup yang rapi.\n\nHanya senyum itu, dan dua orang yang sama-sama tau artinya tapi sama-sama pilih untuk tidak mengucapkannya.\n\nDan entah kenapa, kedua kemungkinan itu sama beratnya.", quote: "Tidak semua cerita punya ending yang bisa diceritakan. Sebagian besar hidup ada di bagian yang tidak pernah selesai ditulis." }
+};
+
+var part2 = [
+  {
+    chapter: "Part 2 — Malam Itu, Setelah Semuanya",
+    html: "Kamu pulang.\n\nPintu kamar ditutup. HP di tangan.\n\nDan kebiasaan lama itu datang — kamu buka profilnya. Foto terakhir. Timestamp terakhir. Dibaca jam berapa.\n\nKamu tau ini nggak sehat. Kamu tau kamu nggak bakal nemu apa yang kamu cari di sana.\n\nTapi jari kamu udah bergerak sendiri.\n\n<span class='hi'>Beberapa luka punya alamat yang selalu kamu datangi ulang.</span>",
+    choices: [
+      { label: "Buka profilnya. Lihat semuanya.", note: "Kamu tau akibatnya. Tapi kamu tetap buka.", dh: -15, dj: -10, dl: -5, cons: "Foto itu masih sama. Tapi kamu lihat satu hal yang baru — dia kelihatan baik-baik aja. Dan entah kenapa, itu yang paling nyakitin.", next: 1 },
+      { label: "Taruh HP. Tiduran menatap langit-langit.", note: "Nggak ada solusi. Tapi setidaknya kamu nggak pergi ke sana.", dh: 0, dj: 10, dl: 10, cons: "Langit-langit kamarmu nggak kasih jawaban apa-apa. Tapi kamu juga nggak nambah luka baru malam ini. Itu sesuatu.", next: 1 },
+      { label: "Telepon teman. Nggak cerita apa-apa, cuma minta ditemanin.", note: "Ini bentuk keberanian yang sering dianggap kecil.", dh: 10, dj: 5, dl: 15, cons: "Suara di ujung telepon itu nggak tau kamu lagi kenapa. Tapi kehadirannya cukup buat kamu ngerasa nggak sendirian malam itu. Itu lebih dari cukup.", next: 1 }
+    ]
+  },
+  {
+    chapter: "Part 2 — Pertanyaan Jam 3 Pagi",
+    html: "Kamu nggak bisa tidur.\n\nDan otak kamu mulai kerja lembur — memutar ulang semua percakapan, semua momen, semua hal yang harusnya kamu bilang tapi nggak kamu bilang.\n\nLalu datang pertanyaan itu. Pertanyaan yang paling sering kamu tanya ke diri sendiri:\n\n<span class='dlg'>\"Kalau aku beda — lebih sabar, lebih menarik, lebih nggak banyak maunya — apa dia bakal tetap ada?\"</span>\n\nKamu udah nanya ini ratusan kali.\n\nDan kamu tau jawabannya. Tapi entah kenapa kamu terus nanya.",
+    choices: [
+      { label: "Iya. Pasti itu salahku juga.", note: "Kamu udah terlalu sering jadi hakim untuk dirimu sendiri.", dh: -20, dj: -15, dl: 0, cons: "Dan dengan meyakini itu, kamu juga meyakini bahwa kamu harus jadi orang yang berbeda supaya layak dicintai. Itu beban yang nggak pernah seharusnya kamu pikul.", next: 2 },
+      { label: "Nggak tau. Aku capek nyalahin diri sendiri.", note: "Ini bukan menyerah. Ini mulai jujur.", dh: 5, dj: 15, dl: 10, cons: "Capek itu valid. Dan ngakuin capek bukan berarti kamu lemah — kadang itu satu-satunya cara kamu bisa mulai istirahat dari perang yang kamu kobarkan ke diri sendiri.", next: 2 },
+      { label: "Nggak. Dan aku benci diri sendiri karena masih nanya ini.", note: "Dua hal yang benar sekaligus.", dh: -5, dj: 20, dl: 5, cons: "Kamu tau jawabannya. Kamu tau kamu nggak salah atas semua itu. Tapi tetap aja pertanyaannya datang. Dan itu bukan bukti kamu lemah — itu bukti luka itu masih ada.", next: 2 }
+    ]
+  },
+  {
+    chapter: "Part 2 — Orang yang Paling Sering Kamu Abaikan",
+    html: "Pagi datang.\n\nKamu ngaca. Dan untuk beberapa detik, kamu beneran lihat diri kamu — bukan penampilan, bukan ekspresi.\n\nTapi orangnya.\n\nKamu sadar sesuatu:\n\nKamu selalu ada buat orang lain. Kamu dengerin cerita mereka, kamu ingetin mereka makan, kamu tanya kabar duluan.\n\nTapi terakhir kali kamu nanya kabar dirimu sendiri — dan dengerin jawabannya dengan serius — kapan?\n\n<span class='hi'>Kamu udah lama jadi orang pertama yang kamu korbankan kalau ada yang butuh tempat bersandar.</span>",
+    choices: [
+      { label: "Aku memang harus kuat buat orang lain.", note: "Tapi siapa yang kuat buat kamu?", dh: -10, dj: -5, dl: 5, cons: "Dan tanpa kamu sadari, kamu udah bangun identitas di atas pengorbanan. Sampai kamu nggak tau lagi, di luar peran itu, kamu sebenernya siapa.", next: 3 },
+      { label: "Aku nggak tau cara minta tolong tanpa ngerasa jadi beban.", note: "Ini bukan karaktermu. Ini sesuatu yang diajarkan ke kamu.", dh: 5, dj: 20, dl: 10, cons: "Keyakinan bahwa kamu adalah beban — itu bukan fakta. Itu narasi yang kamu pelajari dari pengalaman-pengalaman yang harusnya nggak terjadi padamu.", next: 3 },
+      { label: "Kayaknya aku udah lama nggak benar-benar baik-baik aja.", note: "Dan ini pertama kalinya kamu ngakuinnya.", dh: 15, dj: 25, dl: 15, cons: "Kata-kata itu — bahkan cuma di kepala sendiri — berat banget. Tapi kadang ngakuin ke diri sendiri adalah langkah pertama yang paling penting dan paling diabaikan.", next: 3 }
+    ]
+  },
+  {
+    chapter: "Part 2 — Satu Hal yang Kamu Pilih",
+    html: "Kamu masih di depan cermin.\n\nHari ini akan dimulai. Notifikasi akan masuk. Orang-orang akan butuh sesuatu.\n\nTapi sebelum semua itu — kamu punya satu detik ini.\n\nSatu detik di mana kamu bisa milih satu hal kecil. Bukan solusi besar. Bukan janji yang muluk.\n\nCuma satu hal, hari ini, untuk dirimu sendiri.\n\n<span class='hi'>Apa yang kamu pilih?</span>",
+    choices: [
+      { label: "Aku mau berhenti minta maaf atas hal yang bukan salahku.", note: "Ini lebih susah dari kedengarannya.", dh: 15, dj: 20, dl: 10, cons: null, ending: "healed" },
+      { label: "Aku mau jujur ke satu orang hari ini tentang gimana kondisiku.", note: "Nggak harus semuanya. Cukup satu orang.", dh: 20, dj: 25, dl: 5, cons: null, ending: "free" },
+      { label: "Aku mau duduk diam sebentar — tanpa HP, tanpa distraksi — dan cuma ada sama diri sendiri.", note: "Kedengarannya sederhana. Tapi berapa lama kamu nggak melakukan ini?", dh: 10, dj: 10, dl: 20, cons: null, ending: "raw" },
+      { label: "Aku nggak tau. Dan aku izinin diri sendiri untuk nggak tau dulu.", note: "Nggak semua hari harus punya jawaban.", dh: 5, dj: 5, dl: 25, cons: null, ending: "stuck" }
+    ]
+  }
+];
+
+var endings2 = {
+  healed: {
+    type: "Ending Part 2: Pulih Pelan-Pelan",
+    title: "Maaf yang Tidak Perlu Kamu Beri",
+    cls: "healed",
+    text: "Kamu nggak langsung berubah hari itu.\n\nTapi ada shift kecil — kamu mulai sadar setiap kali reflek mau bilang 'maaf' atas hal yang bukan salahmu. Dan sesekali, kamu tahan kata itu.\n\nItu kecil banget. Tapi itu nyata.\n\nDan perubahan yang nyata selalu dimulai dari hal yang kecil banget.",
+    quote: "Berhenti meminta maaf atas ruang yang kamu tempati di dunia ini adalah salah satu revolusi terbesar yang bisa kamu lakukan untuk dirimu sendiri."
+  },
+  free: {
+    type: "Ending Part 2: Keberanian Kecil",
+    title: "Satu Orang yang Tau",
+    cls: "free",
+    text: "Kamu ngomong ke satu orang.\n\nNggak semuanya. Cuma cukup.\n\nDan orang itu nggak lari. Nggak kelihatan terbebani. Mereka cuma bilang: 'Makasih udah cerita.'\n\nDan kamu baru sadar — selama ini kamu terlalu lama menanggung semuanya sendirian bukan karena nggak ada yang mau dengar. Tapi karena kamu nggak pernah ngasih mereka kesempatan.",
+    quote: "Kamu bukan beban. Kamu hanya seseorang yang belum menemukan orang yang tepat untuk berbagi — atau belum membiarkan dirimu mencoba."
+  },
+  raw: {
+    type: "Ending Part 2: Hadir",
+    title: "Lima Menit Bersamamu Sendiri",
+    cls: "raw",
+    text: "Kamu duduk. HP di laci.\n\nLima menit pertama terasa aneh. Kamu nggak biasa diam tanpa sesuatu yang ngisi kepala.\n\nTapi di menit ketiga, ada sesuatu yang pelan-pelan naik ke permukaan — perasaan yang udah lama kamu push down karena nggak ada waktu.\n\nKamu nggak langsung tau namanya. Tapi kamu biarkan dia ada.\n\nDan itu sudah cukup.",
+    quote: "Kehadiran yang paling susah dipelajari adalah kehadiran untuk diri sendiri."
+  },
+  stuck: {
+    type: "Ending Part 2: Jujur",
+    title: "Nggak Tau Pun Sebuah Jawaban",
+    cls: "stuck",
+    text: "Kamu nggak tau harus mulai dari mana.\n\nDan kamu berhenti pura-pura tau.\n\nItu bukan kekalahan. Itu justru salah satu hal paling jujur yang bisa kamu lakukan — ngakuin bahwa kamu lagi di tempat yang berat, dan kamu nggak harus punya peta dulu sebelum mulai jalan.\n\nKadang langkah pertama itu cuma: berhenti bohong ke diri sendiri bahwa semuanya baik-baik aja.",
+    quote: "Tidak apa-apa untuk tidak baik-baik saja. Yang tidak apa-apa adalah berpura-pura baik-baik saja sampai kamu lupa kapan terakhir kali kamu jujur pada diri sendiri."
+  }
+};
+
+function clamp(v){ return Math.max(0, Math.min(100, v)); }
+
+function updateStats(){
+  S.hati = clamp(S.hati); S.jujur = clamp(S.jujur); S.lupa = clamp(S.lupa);
+  document.getElementById('fHati').style.width = S.hati + '%';
+  document.getElementById('fJujur').style.width = S.jujur + '%';
+  document.getElementById('fLupa').style.width = S.lupa + '%';
+  document.getElementById('vHati').textContent = S.hati;
+  document.getElementById('vJujur').textContent = S.jujur;
+  document.getElementById('vLupa').textContent = S.lupa;
+}
+
+function updateProg(){
+  var arr = S.part === 1 ? part1 : part2;
+  var el = document.getElementById('progLine');
+  el.innerHTML = '';
+  for(var i = 0; i < arr.length; i++){
+    var d = document.createElement('div');
+    d.className = 'prog-dot' + (i < S.scene ? ' done' : i === S.scene ? ' cur' : '');
+    el.appendChild(d);
+  }
+}
+
+function renderScene(){
+  var arr = S.part === 1 ? part1 : part2;
+  var sc = arr[S.scene];
+  document.getElementById('chapTag').textContent = sc.chapter;
+  document.getElementById('sceneText').innerHTML = sc.html;
+  document.getElementById('consBox').className = 'cons-box';
+  document.getElementById('consBox').textContent = '';
+  document.getElementById('nextBtn').className = 'next-btn';
+
+  var choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  sc.choices.forEach(function(ch, i){
+    var btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<span class="key">' + String.fromCharCode(65+i) + '</span>' + ch.label + '<span class="note">' + ch.note + '</span>';
+    btn.onclick = function(){ handleChoice(i); };
+    choicesEl.appendChild(btn);
+  });
+  updateProg();
+}
+
+function handleChoice(idx){
+  var arr = S.part === 1 ? part1 : part2;
+  var sc = arr[S.scene];
+  var ch = sc.choices[idx];
+  S.hati += ch.dh; S.jujur += ch.dj; S.lupa += ch.dl;
+  updateStats();
+
+  document.querySelectorAll('.choice-btn').forEach(function(b, i){
+    b.className = 'choice-btn ' + (i === idx ? 'sel' : 'dim');
+  });
+
+  if(ch.cons){
+    var box = document.getElementById('consBox');
+    box.textContent = ch.cons;
+    box.className = 'cons-box show';
+  }
+
+  if(ch.ending){
+    setTimeout(function(){ showEnding(ch.ending); }, 1200);
+  } else {
+    var nb = document.getElementById('nextBtn');
+    nb.className = 'next-btn show';
+    nb.onclick = function(){
+      S.scene = ch.next;
+      nb.className = 'next-btn';
+      document.getElementById('consBox').className = 'cons-box';
+      renderScene();
+    };
+  }
+}
+
+function showEnding(type){
+  document.getElementById('sceneCard').style.display = 'none';
+  document.getElementById('choices').style.display = 'none';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('progLine').style.display = 'none';
+  document.getElementById('consBox').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+
+  if(S.part === 1){
+    var e = endings1[type];
+    document.getElementById('endType').textContent = e.type;
+    document.getElementById('endTitle').textContent = e.title;
+    document.getElementById('endTitle').className = 'end-title ' + e.cls;
+    document.getElementById('endText').textContent = e.text;
+    document.getElementById('endQuote').textContent = '\u201c' + e.quote + '\u201d';
+    document.getElementById('endScreen').className = 'ending show';
+  } else {
+    var e2 = endings2[type];
+    document.getElementById('endType2').textContent = e2.type;
+    document.getElementById('endTitle2').textContent = e2.title;
+    document.getElementById('endTitle2').className = 'end-title ' + e2.cls;
+    document.getElementById('endText2').textContent = e2.text;
+    document.getElementById('endQuote2').textContent = '\u201c' + e2.quote + '\u201d';
+    document.getElementById('endScreen2').className = 'ending show';
+  }
+}
+
+function startPart2(){
+  document.getElementById('transScreen').className = 'part-transition';
+  document.getElementById('sceneCard').style.display = '';
+  document.getElementById('choices').style.display = '';
+  document.getElementById('statsBar').style.display = '';
+  document.getElementById('progLine').style.display = '';
+  document.getElementById('consBox').style.display = '';
+  document.getElementById('nextBtn').style.display = '';
+  S.part = 2;
+  S.scene = 0;
+  document.getElementById('partBadge').textContent = 'Part 2';
+  document.getElementById('mainTitle').innerHTML = 'Orang yang Paling Sering Kamu <span>Sakiti</span>';
+  updateStats();
+  renderScene();
+}
+
+document.getElementById('goPart2Btn').onclick = function(){
+  document.getElementById('endScreen').className = 'ending';
+  document.getElementById('transScreen').className = 'part-transition show';
+};
+
+document.getElementById('startPart2Btn').onclick = startPart2;
+
+document.getElementById('restartBtn').onclick = function(){
+  S = { scene: 0, part: 1, hati: 80, jujur: 40, lupa: 10 };
+  document.getElementById('endScreen').className = 'ending';
+  document.getElementById('sceneCard').style.display = '';
+  document.getElementById('choices').style.display = '';
+  document.getElementById('statsBar').style.display = '';
+  document.getElementById('progLine').style.display = '';
+  document.getElementById('partBadge').textContent = 'Part 1';
+  document.getElementById('mainTitle').innerHTML = 'Hal-Hal yang <span>Tidak Pernah</span> Kamu Bilang';
+  updateStats();
+  renderScene();
+};
+
+document.getElementById('restartBtn2').onclick = function(){
+  S = { scene: 0, part: 1, hati: 80, jujur: 40, lupa: 10 };
+  document.getElementById('endScreen2').className = 'ending';
+  document.getElementById('sceneCard').style.display = '';
+  document.getElementById('choices').style.display = '';
+  document.getElementById('statsBar').style.display = '';
+  document.getElementById('progLine').style.display = '';
+  document.getElementById('partBadge').textContent = 'Part 1';
+  document.getElementById('mainTitle').innerHTML = 'Hal-Hal yang <span>Tidak Pernah</span> Kamu Bilang';
+  updateStats();
+  renderScene();
+};
+
+updateStats();
+renderScene();
+</script>
+</body>
+</html>
